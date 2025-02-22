@@ -17,6 +17,17 @@ class AppTodo extends React.Component {
     tasks: arrayTasks,
     allTasks: arrayTasks,
     activeFilter: 'All',
+    editingTaskId: null, // ID редактируемой задачи
+  };
+
+  startEditing = (id) => {
+    console.log('Начало редактирования:', id);
+    this.setState({ editingTaskId: id });
+  };
+
+  stopEditing = () => {
+    console.log('Остановка редактирования');
+    this.setState({ editingTaskId: null });
   };
 
   addTask = (description) => {
@@ -66,7 +77,31 @@ class AppTodo extends React.Component {
     this.setState({ tasks: this.state.allTasks, activeFilter: 'All' });
   };
 
+  editTask = (id, newDescription) => {
+    this.setState(
+      (prevState) => {
+        console.log('Редактируем задачу с ID:', id, 'Новый текст:', newDescription);
+
+        const updatedAllTasks = prevState.allTasks.map((task) =>
+          task.id === id ? { ...task, description: newDescription } : task
+        );
+
+        console.log('Обновленный список задач:', updatedAllTasks);
+
+        return {
+          tasks: updatedAllTasks, // Переприсваиваем заново, чтобы React перерисовал список
+          allTasks: updatedAllTasks,
+          editingTaskId: null, // Завершаем редактирование
+        };
+      },
+      () => {
+        console.log('Текущий список после обновления:', this.state.tasks);
+      }
+    );
+  };
+
   render() {
+    console.log('Рендер списка задач:', this.state.tasks);
     return (
       <section className="todoapp">
         <header className="header">
@@ -74,7 +109,15 @@ class AppTodo extends React.Component {
           <NewTaskForm onAddTask={this.addTask} />
         </header>
         <section className="main">
-          <TaskList tasks={this.state.tasks} onToggle={this.toggleTaskStatus} onDelete={this.deleteTask} />
+          <TaskList
+            tasks={this.state.tasks}
+            onToggle={this.toggleTaskStatus}
+            onDelete={this.deleteTask}
+            onEdit={this.editTask}
+            onStartEditing={this.startEditing}
+            onStopEditing={this.stopEditing}
+            editingTaskId={this.state.editingTaskId}
+          />
         </section>
         <Footer
           onClearCompleted={this.clearCompleted}
