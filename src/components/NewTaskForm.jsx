@@ -1,38 +1,24 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import './NewTaskForm.css';
 
-class NewTaskForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      label: '',
-    };
-  }
+function NewTaskForm({ onAddTask }) {
+  const [label, setLabel] = useState('');
 
-  onLabelChange = (e) => {
-    this.setState({
-      label: e.target.value,
-    });
+  const onLabelChange = (e) => {
+    setLabel(e.target.value);
   };
 
-  onSubmit = (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    const { onAddTask } = this.props; // Деструктуризация props
-    const { label } = this.state; // Деструктуризация state
-
     onAddTask(label);
-    this.setState({ label: '' });
+    setLabel('');
   };
 
-  render() {
-    const { label } = this.state;
-
-    return (
-      <form onSubmit={this.onSubmit}>
-        <input className="new-todo" placeholder="What needs to be done?" onChange={this.onLabelChange} value={label} />
-      </form>
-    );
-  }
+  return (
+    <form onSubmit={onSubmit}>
+      <input className="new-todo" placeholder="What needs to be done?" onChange={onLabelChange} value={label} />
+    </form>
+  );
 }
 
 export default NewTaskForm;
