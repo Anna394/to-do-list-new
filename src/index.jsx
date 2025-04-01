@@ -7,17 +7,53 @@ import Footer from './components/Footer';
 import './index.css';
 
 const arrayTasks = [
-  { id: 1, description: 'Completed task', done: true, created: Date.now() },
-  { id: 2, description: 'Editing task', done: false, created: Date.now() },
-  { id: 3, description: 'Active task', done: false, created: Date.now() },
+  { id: 1, description: 'Completed task', done: true, created: Date.now(), timeSpent: 0, isRunning: false },
+  { id: 2, description: 'Editing task', done: false, created: Date.now(), timeSpent: 0, isRunning: false },
+  { id: 3, description: 'Active task', done: false, created: Date.now(), timeSpent: 0, isRunning: false },
 ];
 
 class AppTodo extends React.Component {
-  state = {
-    tasks: arrayTasks,
-    allTasks: arrayTasks,
-    activeFilter: 'All',
-    editingTaskId: null, // ID редактируемой задачи
+  constructor(props) {
+    super(props);
+    this.state = {
+      tasks: arrayTasks,
+      allTasks: arrayTasks,
+      activeFilter: 'All',
+      editingTaskId: null, // ID редактируемой задачи
+    };
+    this.timers = {};
+  }
+
+  componentWillUnmount() {
+    this.stopTimer(); // Чистим таймер, если задача будет удалена со страницы
+  }
+
+  startTimer = (id) => {
+    if (this.timers[id]) return;
+
+    this.setState((prevState) => ({
+      tasks: prevState.tasks.map((task) => (task.id === id ? { ...task, isRunning: true } : task)),
+      allTasks: prevState.allTasks.map((task) => (task.id === id ? { ...task, isRunning: true } : task)),
+    }));
+
+    this.timers[id] = setInterval(() => {
+      this.setState((prevState) => ({
+        tasks: prevState.tasks.map((task) => (task.id === id ? { ...task, timeSpent: task.timeSpent + 1 } : task)),
+        allTasks: prevState.allTasks.map((task) =>
+          task.id === id ? { ...task, timeSpent: task.timeSpent + 1 } : task
+        ),
+      }));
+    }, 1000);
+  };
+
+  stopTimer = (id) => {
+    clearInterval(this.timers[id]);
+    delete this.timers[id];
+
+    this.setState((prevState) => ({
+      tasks: prevState.tasks.map((task) => (task.id === id ? { ...task, isRunning: false } : task)),
+      allTasks: prevState.allTasks.map((task) => (task.id === id ? { ...task, isRunning: false } : task)),
+    }));
   };
 
   startEditing = (id) => {
@@ -117,6 +153,8 @@ class AppTodo extends React.Component {
             onStartEditing={this.startEditing}
             onStopEditing={this.stopEditing}
             editingTaskId={this.state.editingTaskId}
+            onStartTimer={this.startTimer}
+            onStopTimer={this.stopTimer}
           />
         </section>
         <Footer

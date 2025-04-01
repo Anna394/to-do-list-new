@@ -5,7 +5,7 @@ export default class Task extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      editText: props.description, // Начальный текст
+      editText: props.description,
     };
   }
 
@@ -16,6 +16,12 @@ export default class Task extends Component {
     }
     console.log(`Task ${this.props.id} -> isEditing:`, this.props.isEditing); // Логируем состояние
   }
+
+  formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
   handleChange = (event) => {
     this.setState({ editText: event.target.value });
@@ -39,14 +45,25 @@ export default class Task extends Component {
   };
 
   render() {
-    const { id, description, done, onToggle, onDelete, isEditing, onStartEditing } = this.props;
+    const {
+      id,
+      description,
+      done,
+      onToggle,
+      onDelete,
+      isEditing,
+      onStartEditing,
+      onStartTimer,
+      onStopTimer,
+      timeSpent,
+    } = this.props;
     const { editText } = this.state;
 
     return (
       <li className={done ? 'completed' : ''}>
         <div className="view">
           <input className="toggle" type="checkbox" checked={done} onChange={onToggle} />
-          {isEditing ? ( // Теперь проверяем isEditing из props
+          {isEditing ? (
             <input
               type="text"
               className="edit"
@@ -59,6 +76,11 @@ export default class Task extends Component {
           ) : (
             <label>
               <span className="description">{description}</span>
+              <span className="created">
+                <button className="icon icon-play" onClick={onStartTimer}></button>
+                <button className="icon icon-pause" onClick={onStopTimer}></button>
+                {this.formatTime(timeSpent)}
+              </span>
               <span className="created">{formatDistanceToNow(new Date(this.props.created), { addSuffix: true })}</span>
             </label>
           )}

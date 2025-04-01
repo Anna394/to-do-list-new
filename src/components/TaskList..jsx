@@ -3,7 +3,17 @@ import React from 'react';
 import Task from './Task';
 import './TaskList.css';
 
-function TaskList({ tasks, onDelete, onToggle, onEdit, onStartEditing, onStopEditing, editingTaskId }) {
+function TaskList({
+  tasks,
+  onDelete,
+  onToggle,
+  onEdit,
+  onStartEditing,
+  onStopEditing,
+  editingTaskId,
+  onStartTimer,
+  onStopTimer,
+}) {
   return (
     <ul className="todo-list">
       {tasks.map((task) => (
@@ -19,6 +29,9 @@ function TaskList({ tasks, onDelete, onToggle, onEdit, onStartEditing, onStopEdi
           isEditing={task.id === editingTaskId} // Проверяем, редактируется ли задача
           onStartEditing={onStartEditing}
           onStopEditing={onStopEditing}
+          onStartTimer={() => onStartTimer(task.id)}
+          onStopTimer={() => onStopTimer(task.id)}
+          timeSpent={task.timeSpent}
         />
       ))}
     </ul>
