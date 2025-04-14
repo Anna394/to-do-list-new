@@ -6,6 +6,8 @@ class NewTaskForm extends Component {
     super(props);
     this.state = {
       label: '',
+      min: '',
+      sec: '',
     };
   }
 
@@ -15,21 +17,44 @@ class NewTaskForm extends Component {
     });
   };
 
+  onMinChange = (e) => {
+    this.setState({ min: e.target.value });
+  };
+
+  onSecChange = (e) => {
+    this.setState({ sec: e.target.value });
+  };
+
   onSubmit = (e) => {
     e.preventDefault();
     const { onAddTask } = this.props; // Деструктуризация props
-    const { label } = this.state; // Деструктуризация state
+    const { label, min, sec } = this.state; // Деструктуризация state
 
-    onAddTask(label);
-    this.setState({ label: '' });
+    onAddTask(label, min, sec);
+    this.setState({ label: '', min: '', sec: '' });
   };
 
   render() {
-    const { label } = this.state;
+    const { label, min, sec } = this.state;
 
     return (
-      <form onSubmit={this.onSubmit}>
-        <input className="new-todo" placeholder="What needs to be done?" onChange={this.onLabelChange} value={label} />
+      <form className="new-todo-form" onSubmit={this.onSubmit}>
+        <input className="new-todo" placeholder="Task" onChange={this.onLabelChange} value={label} />
+        <input
+          className="new-todo-form__timer"
+          placeholder="Min"
+          onChange={this.onMinChange}
+          value={min}
+          type="number"
+        />
+        <input
+          className="new-todo-form__timer"
+          placeholder="Sec"
+          onChange={this.onSecChange}
+          value={sec}
+          type="number"
+        />
+        <button type="submit"></button>
       </form>
     );
   }

@@ -7,9 +7,33 @@ import Footer from './components/Footer';
 import './index.css';
 
 const arrayTasks = [
-  { id: 1, description: 'Completed task', done: true, created: Date.now(), timeSpent: 0, isRunning: false },
-  { id: 2, description: 'Editing task', done: false, created: Date.now(), timeSpent: 0, isRunning: false },
-  { id: 3, description: 'Active task', done: false, created: Date.now(), timeSpent: 0, isRunning: false },
+  {
+    id: 1,
+    description: 'Completed task',
+    done: true,
+    created: Date.now(),
+    isRunning: false,
+    timeLeft: 300,
+    initialTime: 300,
+  },
+  {
+    id: 2,
+    description: 'Editing task',
+    done: false,
+    created: Date.now(),
+    isRunning: false,
+    timeLeft: 300,
+    initialTime: 300,
+  },
+  {
+    id: 3,
+    description: 'Active task',
+    done: false,
+    created: Date.now(),
+    isRunning: false,
+    timeLeft: 300,
+    initialTime: 300,
+  },
 ];
 
 class AppTodo extends React.Component {
@@ -29,24 +53,64 @@ class AppTodo extends React.Component {
   }
 
   startTimer = (id) => {
-    if (this.timers[id]) return;
+    if (this.timers[id]) return; // если уже запущен — выходим
 
     this.setState((prevState) => ({
-      tasks: prevState.tasks.map((task) => (task.id === id ? { ...task, isRunning: true } : task)),
-      allTasks: prevState.allTasks.map((task) => (task.id === id ? { ...task, isRunning: true } : task)),
+      tasks: prevState.tasks.map((task) => {
+        if (task.id === id) {
+          // Если время закончилось — сбрасываем
+          const timeLeft = task.timeLeft <= 0 ? task.initialTime : task.timeLeft;
+          return { ...task, isRunning: true, timeLeft };
+        }
+        return task;
+      }),
+      allTasks: prevState.allTasks.map((task) => {
+        if (task.id === id) {
+          const timeLeft = task.timeLeft <= 0 ? task.initialTime : task.timeLeft;
+          return { ...task, isRunning: true, timeLeft };
+        }
+        return task;
+      }),
     }));
 
     this.timers[id] = setInterval(() => {
-      this.setState((prevState) => ({
-        tasks: prevState.tasks.map((task) => (task.id === id ? { ...task, timeSpent: task.timeSpent + 1 } : task)),
-        allTasks: prevState.allTasks.map((task) =>
-          task.id === id ? { ...task, timeSpent: task.timeSpent + 1 } : task
-        ),
-      }));
+      this.setState((prevState) => {
+        let tasks = prevState.tasks.map((task) => {
+          if (task.id === id) {
+            const newTime = task.timeLeft - 1;
+
+            if (newTime <= 0) {
+              clearInterval(this.timers[id]);
+              delete this.timers[id];
+              return { ...task, timeLeft: 0, isRunning: false };
+            }
+
+            return { ...task, timeLeft: newTime };
+          }
+          return task;
+        });
+
+        let allTasks = prevState.allTasks.map((task) => {
+          if (task.id === id) {
+            const newTime = task.timeLeft - 1;
+
+            if (newTime <= 0) {
+              return { ...task, timeLeft: 0, isRunning: false };
+            }
+
+            return { ...task, timeLeft: newTime };
+          }
+          return task;
+        });
+
+        return { tasks, allTasks };
+      });
     }, 1000);
   };
 
   stopTimer = (id) => {
+    if (!this.timers[id]) return;
+
     clearInterval(this.timers[id]);
     delete this.timers[id];
 
@@ -57,21 +121,21 @@ class AppTodo extends React.Component {
   };
 
   startEditing = (id) => {
-    console.log('Начало редактирования:', id);
     this.setState({ editingTaskId: id });
   };
 
   stopEditing = () => {
-    console.log('Остановка редактирования');
     this.setState({ editingTaskId: null });
   };
 
-  addTask = (description) => {
+  addTask = (description, min, sec) => {
     const newTask = {
       id: Date.now(),
       description,
       done: false,
       created: Date.now(),
+      timeLeft: Number(min) * 60 + Number(sec),
+      initialTime: Number(min) * 60 + Number(sec),
     };
 
     this.setState((prevState) => ({
@@ -114,30 +178,20 @@ class AppTodo extends React.Component {
   };
 
   editTask = (id, newDescription) => {
-    this.setState(
-      (prevState) => {
-        console.log('Редактируем задачу с ID:', id, 'Новый текст:', newDescription);
+    this.setState((prevState) => {
+      const updatedAllTasks = prevState.allTasks.map((task) =>
+        task.id === id ? { ...task, description: newDescription } : task
+      );
 
-        const updatedAllTasks = prevState.allTasks.map((task) =>
-          task.id === id ? { ...task, description: newDescription } : task
-        );
-
-        console.log('Обновленный список задач:', updatedAllTasks);
-
-        return {
-          tasks: updatedAllTasks, // Переприсваиваем заново, чтобы React перерисовал список
-          allTasks: updatedAllTasks,
-          editingTaskId: null, // Завершаем редактирование
-        };
-      },
-      () => {
-        console.log('Текущий список после обновления:', this.state.tasks);
-      }
-    );
+      return {
+        tasks: updatedAllTasks, // Переприсваиваем заново, чтобы React перерисовал список
+        allTasks: updatedAllTasks,
+        editingTaskId: null, // Завершаем редактирование
+      };
+    });
   };
 
   render() {
-    console.log('Рендер списка задач:', this.state.tasks);
     return (
       <section className="todoapp">
         <header className="header">

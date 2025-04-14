@@ -14,7 +14,6 @@ export default class Task extends Component {
     if (prevProps.description !== this.props.description && !this.props.isEditing) {
       this.setState({ editText: this.props.description });
     }
-    console.log(`Task ${this.props.id} -> isEditing:`, this.props.isEditing); // Логируем состояние
   }
 
   formatTime = (seconds) => {
@@ -30,7 +29,6 @@ export default class Task extends Component {
   handleSave = () => {
     const { editText } = this.state;
     if (editText.trim()) {
-      console.log('Сохранение задачи ID:', this.props.id, 'Текущий текст:', editText);
       this.props.onEdit(this.props.id, editText);
     }
     this.props.onStopEditing();
@@ -55,7 +53,7 @@ export default class Task extends Component {
       onStartEditing,
       onStartTimer,
       onStopTimer,
-      timeSpent,
+      timeLeft,
     } = this.props;
     const { editText } = this.state;
 
@@ -79,7 +77,7 @@ export default class Task extends Component {
               <span className="created">
                 <button className="icon icon-play" onClick={onStartTimer}></button>
                 <button className="icon icon-pause" onClick={onStopTimer}></button>
-                {this.formatTime(timeSpent)}
+                {this.formatTime(timeLeft)}
               </span>
               <span className="created">{formatDistanceToNow(new Date(this.props.created), { addSuffix: true })}</span>
             </label>
